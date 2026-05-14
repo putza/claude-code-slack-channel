@@ -1001,7 +1001,7 @@ async function executeReply(args: Record<string, any>, ctx: ToolContext): Promis
   // lead-in but keeps the hook identifier). Detect that and
   // transition to :no_entry: (denied) instead so the operator can
   // scan a channel and tell completed-OK from blocked at a glance.
-  const isHookDeny = /(?:Hearth (?:pre-tool|nursery-shield) block|nursery-shield|destructive-verbs)/i.test(text)
+  const isHookDeny = /(?:Hearth (?:pre-tool|nursery-shield|ha-write-shield) block|nursery-shield|ha-write-shield|destructive-verbs)/i.test(text)
   const terminalReaction = isHookDeny ? 'no_entry' : 'white_check_mark'
   if (lastActiveChannel && lastActiveTs) {
     await setInboundReaction(ctx.web, lastActiveChannel, lastActiveTs, terminalReaction)
