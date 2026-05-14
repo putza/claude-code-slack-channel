@@ -992,11 +992,19 @@ async function executeReply(args: Record<string, any>, ctx: ToolContext): Promis
     lastTs = (res.ts as string) || lastTs
   }
 
-  // Sprint 5+6 reaction lifecycle: transition the inbound's reaction to
-  // :white_check_mark: now that the bot has posted a reply. Best-effort;
-  // failures don't propagate.
+  // Sprint 5+6+7 reaction lifecycle: pick the terminal reaction.
+  // Default is :white_check_mark: (done). If the bot's reply is
+  // relaying a PreToolUse hook deny (Sprint 3 destructive-verb hook
+  // or Sprint 6 nursery-shield), the reply text references the
+  // hook either by its verbatim "Hearth ... block:" prefix or by
+  // the unique hook name itself (claude sometimes paraphrases the
+  // lead-in but keeps the hook identifier). Detect that and
+  // transition to :no_entry: (denied) instead so the operator can
+  // scan a channel and tell completed-OK from blocked at a glance.
+  const isHookDeny = /(?:Hearth (?:pre-tool|nursery-shield) block|nursery-shield|destructive-verbs)/i.test(text)
+  const terminalReaction = isHookDeny ? 'no_entry' : 'white_check_mark'
   if (lastActiveChannel && lastActiveTs) {
-    await setInboundReaction(ctx.web, lastActiveChannel, lastActiveTs, 'white_check_mark')
+    await setInboundReaction(ctx.web, lastActiveChannel, lastActiveTs, terminalReaction)
   }
 
   // Upload files if provided
